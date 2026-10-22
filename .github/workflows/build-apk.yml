@@ -25,11 +25,11 @@ jobs:
         flutter-version: '3.24.0'
         channel: 'stable'
 
-    # تثبيت NDK المستقر وإصدار الأدوات المطلوب
+    # 1. تثبيت NDK الأحدث (الذي يطلبه Flutter 3.24) مع الأدوات الأساسية
     - name: Install NDK and Accept Licenses
       run: |
         $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
-        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "ndk;25.2.9519653" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+        $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "ndk;27.0.12077973" "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
     - name: Create Android platform folder
       run: flutter create --project-name time_table . --platforms=android
@@ -43,18 +43,17 @@ jobs:
     - name: Install dependencies again
       run: flutter pub get
 
-    - name: Set Gradle Version
+    # 2. إجبار المشروع على استخدام NDK الجديد وإعداد Gradle
+    - name: Configure Gradle and NDK
       run: |
-        sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.7-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
+        # تعيين إصدار NDK في build.gradle
+        sed -i 's/ndkVersion .*/ndkVersion "27.0.12077973"/g' android/app/build.gradle
+        # تعطيل Gradle Daemon لتجنب أخطاء الاتصال
+        echo "org.gradle.daemon=false" >> android/gradle.properties
 
-    # إجبار المشروع على استخدام إصدار NDK المستقر
-    - name: Set NDK Version
-      run: |
-        sed -i 's/ndkVersion .*/ndkVersion "25.2.9519653"/g' android/app/build.gradle
-
-    # البناء مع طباعة الأخطاء بشكل مفصل
+    # 3. البناء باستخدام NDK المحدد
     - name: Build APK (Debug)
-      run: flutter build apk --debug --verbose
+      run: flutter build apk --debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
