@@ -33,6 +33,11 @@ jobs:
     - name: Create Android platform folder
       run: flutter create --project-name time_table . --platforms=android
 
+    # إجبار المشروع على استخدام توقيع debug لتجنب خطأ غياب مفتاح التوقيع
+    - name: Force Debug Signing for Release
+      run: |
+        sed -i 's/signingConfig signingConfigs.release/signingConfig signingConfigs.debug/g' android/app/build.gradle
+
     - name: Install dependencies
       run: flutter pub get
 
@@ -40,7 +45,6 @@ jobs:
       run: |
         sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.7-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
 
-    # الخطوة الجديدة: رسم أيقونة تقويم احترافية باستخدام أدوات السيرفر
     - name: Generate App Icon
       run: |
         sudo apt-get install -y imagemagick
@@ -49,6 +53,11 @@ jobs:
 
     - name: Generate App Icons
       run: dart run flutter_launcher_icons
+
+    # تنظيف أي ملفات أيقونات مكررة قد تسبب فشل البناء
+    - name: Clean Duplicate Icons
+      run: |
+        rm -rf android/app/src/main/res/mipmap-*/*.webp || true
 
     - name: Build APK
       run: flutter build apk --release
