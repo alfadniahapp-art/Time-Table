@@ -1,4 +1,4 @@
- name: Build Flutter APK
+name: Build Flutter APK
 
 on:
   push:
@@ -24,6 +24,10 @@ jobs:
       with:
         flutter-version: '3.24.0'
         channel: 'stable'
+
+    # هذه هي الخطوة الجديدة التي تنشئ مجلد android
+    - name: Create Android platform folder
+      run: flutter create . --platforms=android
 
     - name: Install dependencies
       run: flutter pub get
