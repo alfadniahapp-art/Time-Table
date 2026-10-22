@@ -25,7 +25,6 @@ jobs:
         flutter-version: '3.24.0'
         channel: 'stable'
 
-    # قبول التراخيص وتثبيت NDK باستخدام المسار الكامل
     - name: Install NDK and Accept Licenses
       run: |
         $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
@@ -41,8 +40,12 @@ jobs:
       run: |
         sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.7-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
 
-    - name: Generate Icon Image from Library
-      run: flutter test test/generate_icon_test.dart
+    # الخطوة الجديدة: رسم أيقونة تقويم احترافية باستخدام أدوات السيرفر
+    - name: Generate App Icon
+      run: |
+        sudo apt-get install -y imagemagick
+        mkdir -p assets
+        convert -size 1024x1024 xc:"#1565C0" -fill white -draw "roundrectangle 150,200 874,874 50,50" -fill "#1565C0" -draw "rectangle 150,200 874,350" -fill white -pointsize 400 -gravity center -annotate +0+100 "8" assets/icon.png
 
     - name: Generate App Icons
       run: dart run flutter_launcher_icons
