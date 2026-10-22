@@ -28,6 +28,15 @@ jobs:
     - name: Create Android platform folder
       run: flutter create --project-name time_table . --platforms=android
 
+    # الخطوة الجديدة: إعداد Android SDK وقبول التراخيص
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        accept-android-sdk-licenses: true
+
+    - name: Accept Android Licenses
+      run: yes | sdkmanager --licenses || true
+
     - name: Install dependencies
       run: flutter pub get
 
