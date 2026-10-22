@@ -33,37 +33,30 @@ jobs:
     - name: Create Android platform folder
       run: flutter create --project-name time_table . --platforms=android
 
-    # إجبار المشروع على استخدام توقيع debug لتجنب خطأ غياب مفتاح التوقيع
-    - name: Force Debug Signing for Release
-      run: |
-        sed -i 's/signingConfig signingConfigs.release/signingConfig signingConfigs.debug/g' android/app/build.gradle
-
     - name: Install dependencies
+      run: flutter pub get
+
+    # الخطوة الجديدة: تنظيف المشروع قبل البناء
+    - name: Clean Project
+      run: flutter clean
+
+    - name: Install dependencies again
       run: flutter pub get
 
     - name: Set Gradle Version
       run: |
         sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.7-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
 
-    - name: Generate App Icon
+    # الخطوة الجديدة: إجبار المشروع على استخدام إصدار NDK المثبت
+    - name: Set NDK Version
       run: |
-        sudo apt-get install -y imagemagick
-        mkdir -p assets
-        convert -size 1024x1024 xc:"#1565C0" -fill white -draw "roundrectangle 150,200 874,874 50,50" -fill "#1565C0" -draw "rectangle 150,200 874,350" -fill white -pointsize 400 -gravity center -annotate +0+100 "8" assets/icon.png
+        sed -i 's/ndkVersion .*/ndkVersion "26.1.10909125"/g' android/app/build.gradle
 
-    - name: Generate App Icons
-      run: dart run flutter_launcher_icons
-
-    # تنظيف أي ملفات أيقونات مكررة قد تسبب فشل البناء
-    - name: Clean Duplicate Icons
-      run: |
-        rm -rf android/app/src/main/res/mipmap-*/*.webp || true
-
-    - name: Build APK
-      run: flutter build apk --release
+    - name: Build APK (Debug)
+      run: flutter build apk --debug
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
-        name: app-release-apk
-        path: build/app/outputs/flutter-apk/app-release.apk
+        name: app-debug-apk
+        path: build/app/outputs/flutter-apk/app-debug.apk
