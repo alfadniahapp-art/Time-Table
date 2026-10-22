@@ -25,9 +25,8 @@ jobs:
         flutter-version: '3.24.0'
         channel: 'stable'
 
-    # هذه هي الخطوة الجديدة التي تنشئ مجلد android
     - name: Create Android platform folder
-      run: flutter create . --platforms=android
+      run: flutter create --project-name time_table . --platforms=android
 
     - name: Install dependencies
       run: flutter pub get
