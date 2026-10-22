@@ -13,6 +13,14 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    # 1. تنظيف شامل لذاكرة التخزين المؤقت قبل البدء
+    - name: Clean Gradle and Flutter Caches
+      run: |
+        flutter clean
+        rm -rf ~/.gradle/caches
+        rm -rf ~/.gradle/wrapper
+        rm -rf android/.gradle
+
     - name: Set up Java
       uses: actions/setup-java@v4
       with:
@@ -36,24 +44,19 @@ jobs:
     - name: Install dependencies
       run: flutter pub get
 
-    # الخطوة الجديدة: تنظيف المشروع قبل البناء
-    - name: Clean Project
-      run: flutter clean
-
-    - name: Install dependencies again
-      run: flutter pub get
-
+    # 2. إجبار Gradle على استخدام إصدار متوافق مع Java 17
     - name: Set Gradle Version
       run: |
         sed -i 's|distributionUrl=.*|distributionUrl=https\\://services.gradle.org/distributions/gradle-8.7-all.zip|' android/gradle/wrapper/gradle-wrapper.properties
 
-    # الخطوة الجديدة: إجبار المشروع على استخدام إصدار NDK المثبت
+    # 3. إجبار المشروع على استخدام إصدار NDK المثبت
     - name: Set NDK Version
       run: |
         sed -i 's/ndkVersion .*/ndkVersion "26.1.10909125"/g' android/app/build.gradle
 
+    # 4. البناء مع طباعة تفاصيل الأخطاء (Stacktrace) إذا فشل
     - name: Build APK (Debug)
-      run: flutter build apk --debug
+      run: flutter build apk --debug --stacktrace
 
     - name: Upload APK
       uses: actions/upload-artifact@v4
